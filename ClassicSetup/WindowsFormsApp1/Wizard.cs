@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using Microsoft.Win32;
+using System.Threading.Tasks;
 
 namespace ClassicSetup
 {
@@ -81,6 +82,7 @@ namespace ClassicSetup
                 Log($"Applied {edition} branding to {brandingDestinationPath}");
 
                 SimulateWinR();
+                Task.Delay(200);
                 SendKeys.SendWait($"\"C:\\Classic Files\\Classic Setup\\branding.exe\" -branding \"{edition}\"{Environment.NewLine}");
 
                 Log($"Executed branding.exe for {edition}");
@@ -291,11 +293,7 @@ namespace ClassicSetup
 
         private void RebootButton_Click(object sender, EventArgs e)
         {
-            DialogResult result = MessageBox.Show("Are you sure you want to reboot?", "Reboot", MessageBoxButtons.YesNo);
-            if (result == DialogResult.Yes)
-            {
-                RebootSystem();
-            }
+            RebootSystem();
         }
 
         private void RebootSystem()
