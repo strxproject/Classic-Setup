@@ -84,6 +84,7 @@ namespace ClassicSetup
                 SimulateWinR();
                 Task.Delay(200);
                 SendKeys.SendWait($"\"C:\\Classic Files\\Classic Setup\\branding.exe\" -branding \"{edition}\"{Environment.NewLine}");
+                ClearRunHistory();
 
                 Log($"Executed branding.exe for {edition}");
 
@@ -101,6 +102,30 @@ namespace ClassicSetup
             {
                 MessageBox.Show($"Failed to apply {edition} branding: {ex.Message}");
                 Log($"Error applying {edition} branding: {ex.Message}");
+            }
+        }
+
+        private void ClearRunHistory()
+        {
+            try
+            {
+                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Explorer\RunMRU", true))
+                {
+                    if (key != null)
+                    {
+                        key.SetValue("", "");
+                        foreach (string valueName in key.GetValueNames())
+                        {
+                            key.DeleteValue(valueName);
+                        }
+                        Log("Cleared Run history.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to clear Run history: {ex.Message}");
+                Log($"Error clearing Run history: {ex.Message}");
             }
         }
 
