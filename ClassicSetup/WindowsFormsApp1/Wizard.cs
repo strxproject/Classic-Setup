@@ -11,6 +11,7 @@ namespace ClassicSetup
     public partial class Wizard : Form
     {
         private readonly string logFilePath = @"C:\Classic Files\firsttime.log";
+        private bool hasSimulatedWinR = false;
 
         public Wizard()
         {
@@ -81,10 +82,7 @@ namespace ClassicSetup
                 CopyDirectory(brandingSourcePath, brandingDestinationPath);
                 Log($"Applied {edition} branding to {brandingDestinationPath}");
 
-                SimulateWinR();
-                Task.Delay(200);
-                SendKeys.SendWait($"\"C:\\Classic Files\\Classic Setup\\branding.exe\" -branding \"{edition}\"{Environment.NewLine}");
-                ClearRunHistory();
+                RunCLHBranding($"\"{edition}\"");
 
                 Log($"Executed branding.exe for {edition}");
 
@@ -103,6 +101,21 @@ namespace ClassicSetup
                 MessageBox.Show($"Failed to apply {edition} branding: {ex.Message}");
                 Log($"Error applying {edition} branding: {ex.Message}");
             }
+        }
+
+        private void RunCLHBranding(string edition)
+        {
+            if (!hasSimulatedWinR)
+            {
+                SimulateWinR();
+                hasSimulatedWinR = true;
+            }
+
+            Task.Delay(200).ContinueWith(_ =>
+            {
+                SendKeys.SendWait($"\"C:\\Classic Files\\Classic Setup\\branding.exe\" -branding \"{edition}\"{Environment.NewLine}");
+                ClearRunHistory();
+            });
         }
 
         private void ClearRunHistory()
@@ -222,6 +235,8 @@ namespace ClassicSetup
                     ApplyFirefox115Style();
                     break;
             }
+
+            RunIe4uinit();
             welcomeWizard.NextPage();
         }
 
@@ -299,6 +314,26 @@ namespace ClassicSetup
             else
             {
                 MessageBox.Show($"ADFolder does not exist: {sourceADFolder}");
+            }
+        }
+
+        private void RunIe4uinit()
+        {
+            try
+            {
+                string ie4uinitPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ie4uinit.exe");
+                if (File.Exists(ie4uinitPath))
+                {
+                    System.Diagnostics.Process.Start(ie4uinitPath, "-show");
+                }
+                else
+                {
+                    MessageBox.Show("ie4uinit.exe not found in the application directory.");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to run ie4uinit: {ex.Message}");
             }
         }
 
