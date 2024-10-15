@@ -360,6 +360,19 @@ namespace ClassicSetup
         {
             try
             {
+                using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System", true))
+                {
+                    if (key != null)
+                    {
+                        key.SetValue("EnableLUA", 1, RegistryValueKind.DWord);
+                        Log("EnableLUA set to 1 successfully.");
+                    }
+                    else
+                    {
+                        Log("Failed to open registry key to set EnableLUA.");
+                    }
+                }
+
                 Process.Start(new ProcessStartInfo("shutdown", "/r /t 0")
                 {
                     CreateNoWindow = true,
