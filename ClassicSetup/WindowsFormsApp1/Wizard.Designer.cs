@@ -106,6 +106,7 @@
             this.wizardPage3.Controls.Add(this.cmdlinkpanel);
             this.wizardPage3.Controls.Add(this.label2);
             this.wizardPage3.Name = "wizardPage3";
+            this.wizardPage3.ShowNext = false;
             this.wizardPage3.Size = new System.Drawing.Size(537, 308);
             this.wizardPage3.TabIndex = 1;
             this.wizardPage3.Text = "Choose your branding";
@@ -131,6 +132,7 @@
             this.wizardPage6.Controls.Add(this.bwsrlinkpanel);
             this.wizardPage6.Controls.Add(this.label5);
             this.wizardPage6.Name = "wizardPage6";
+            this.wizardPage6.ShowNext = false;
             this.wizardPage6.Size = new System.Drawing.Size(537, 308);
             this.wizardPage6.TabIndex = 4;
             this.wizardPage6.Text = "Choose your browser style";
@@ -158,6 +160,7 @@
             this.wizardPage5.Controls.Add(this.label4);
             this.wizardPage5.IsFinishPage = true;
             this.wizardPage5.Name = "wizardPage5";
+            this.wizardPage5.ShowNext = false;
             this.wizardPage5.Size = new System.Drawing.Size(537, 308);
             this.wizardPage5.TabIndex = 3;
             this.wizardPage5.Text = "Thank you!";
