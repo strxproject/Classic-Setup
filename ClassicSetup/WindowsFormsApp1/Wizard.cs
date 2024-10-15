@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Diagnostics;
 using Microsoft.Win32;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace ClassicSetup
 {
@@ -59,10 +60,10 @@ namespace ClassicSetup
                     ApplyBranding("Professional");
                     break;
                 case "Windows 7 Home Premium branding":
-                    ApplyBranding("Home Premium");
+                    ApplyBranding("Premium");
                     break;
                 case "Windows 7 Home Basic branding":
-                    ApplyBranding("Home Basic");
+                    ApplyBranding("Basic");
                     break;
                 case "Windows 7 Starter branding":
                     ApplyBranding("Starter");
@@ -105,96 +106,42 @@ namespace ClassicSetup
 
         private async void RunCLHBranding(string edition)
         {
-            if (!hasSimulatedWinR)
-            {
-                SimulateWinR();
-                hasSimulatedWinR = true;
-            }
-
-            await Task.Delay(200);
-
-            await SendKeysWithDelay($"\"C:\\Classic Files\\Classic Setup\\branding.exe\" ");
-            await SendKeysWithDelay($"-branding \"{edition}\"");
-            SendKeys.SendWait($"{Environment.NewLine}");
-
-            ClearRunHistory();
-        }
-
-        private async Task SendKeysWithDelay(string keys)
-        {
-            const int bufferSize = 3;
-            char[] lastChars = new char[bufferSize];
-            int bufferIndex = 0;
-
-            foreach (char key in keys)
-            {
-                if (Array.IndexOf(lastChars, key) == -1) 
-                {
-                    SendKeys.SendWait(key.ToString());
-                    lastChars[bufferIndex] = key;
-                    bufferIndex = (bufferIndex + 1) % bufferSize;
-
-                    await Task.Delay(25);
-                }
-            }
-        }
-
-
-        private void ClearRunHistory()
-        {
             try
             {
-                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Explorer\RunMRU", true))
-                {
-                    if (key != null)
-                    {
-                        key.SetValue("", "");
-                        foreach (string valueName in key.GetValueNames())
-                        {
-                            key.DeleteValue(valueName);
-                        }
-                        Log("Cleared Run history.");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Failed to clear Run history: {ex.Message}");
-                Log($"Error clearing Run history: {ex.Message}");
-            }
-        }
+                string executablePath = @"C:\Classic Files\Classic Setup\branding.exe";
+                string arguments = $"-branding \"{edition}\"";
 
-        private void SimulateWinR()
-        {
-            keybd_event((byte)Keys.LWin, 0, 0, 0);
-            keybd_event((byte)Keys.R, 0, 0, 0);
-            keybd_event((byte)Keys.R, 0, 0x0002, 0);
-            keybd_event((byte)Keys.LWin, 0, 0x0002, 0);
-        }
-
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, uint dwExtraInfo);
-
-        private void RunAsAdmin(string fileName, string arguments)
-        {
-            try
-            {
-                Process process = new Process();
-                process.StartInfo.FileName = "cmd.exe";
-                process.StartInfo.Arguments = $"/c \"{fileName} {arguments}\"";
-                process.StartInfo.Verb = "runas";
-                process.StartInfo.UseShellExecute = true;
-                process.StartInfo.CreateNoWindow = false;
+                var process = new System.Diagnostics.Process();
+                process.StartInfo.FileName = executablePath;
+                process.StartInfo.Arguments = arguments;      
+                process.StartInfo.RedirectStandardOutput = true;  
+                process.StartInfo.RedirectStandardError = true;   
+                process.StartInfo.UseShellExecute = false;        
+                process.StartInfo.CreateNoWindow = true;        
 
                 process.Start();
+
+                string output = await process.StandardOutput.ReadToEndAsync();
+                string error = await process.StandardError.ReadToEndAsync();
+
                 process.WaitForExit();
+
+                if (!string.IsNullOrEmpty(output))
+                {
+                    Log($"Output: {output}");
+                }
+                if (!string.IsNullOrEmpty(error))
+                {
+                    Log($"Error: {error}");
+                }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Failed to run {fileName} as Administrator: {ex.Message}");
-                Log($"Error running {fileName} with arguments {arguments}: {ex.Message}");
+                Log($"Exception: {ex.Message}");
             }
         }
+
+
 
         private void CopyDirectory(string sourceDir, string destinationDir)
         {
