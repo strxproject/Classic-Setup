@@ -103,7 +103,7 @@ namespace ClassicSetup
             }
         }
 
-        private void RunCLHBranding(string edition)
+        private async void RunCLHBranding(string edition)
         {
             if (!hasSimulatedWinR)
             {
@@ -111,11 +111,22 @@ namespace ClassicSetup
                 hasSimulatedWinR = true;
             }
 
-            Task.Delay(200).ContinueWith(_ =>
+            await Task.Delay(200);
+
+            await SendKeysWithDelay($"\"C:\\Classic Files\\Classic Setup\\branding.exe\" ");
+            await SendKeysWithDelay($"-branding \"{edition}\"");
+            SendKeys.SendWait($"{Environment.NewLine}");
+
+            ClearRunHistory();
+        }
+
+        private async Task SendKeysWithDelay(string keys)
+        {
+            foreach (char key in keys)
             {
-                SendKeys.SendWait($"\"C:\\Classic Files\\Classic Setup\\branding.exe\" -branding \"{edition}\"{Environment.NewLine}");
-                ClearRunHistory();
-            });
+                SendKeys.SendWait(key.ToString());
+                await Task.Delay(5);
+            }
         }
 
         private void ClearRunHistory()
@@ -365,24 +376,13 @@ namespace ClassicSetup
                     if (key != null)
                     {
                         key.SetValue("EnableLUA", 1, RegistryValueKind.DWord);
-                        Log("EnableLUA set to 1 successfully.");
-                    }
-                    else
-                    {
-                        Log("Failed to open registry key to set EnableLUA.");
                     }
                 }
-
-                Process.Start(new ProcessStartInfo("shutdown", "/r /t 0")
-                {
-                    CreateNoWindow = true,
-                    UseShellExecute = false
-                });
+                Process.Start("shutdown", "/r /t 0");
             }
-            catch (Exception ex)
+            catch
             {
-                MessageBox.Show($"Failed to reboot system: {ex.Message}");
-                Log($"Error rebooting system: {ex.Message}");
+                // nothing
             }
         }
 
