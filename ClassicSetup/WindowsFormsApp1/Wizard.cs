@@ -122,12 +122,23 @@ namespace ClassicSetup
 
         private async Task SendKeysWithDelay(string keys)
         {
+            const int bufferSize = 3;
+            char[] lastChars = new char[bufferSize];
+            int bufferIndex = 0;
+
             foreach (char key in keys)
             {
-                SendKeys.SendWait(key.ToString());
-                await Task.Delay(5);
+                if (Array.IndexOf(lastChars, key) == -1) 
+                {
+                    SendKeys.SendWait(key.ToString());
+                    lastChars[bufferIndex] = key;
+                    bufferIndex = (bufferIndex + 1) % bufferSize;
+
+                    await Task.Delay(25);
+                }
             }
         }
+
 
         private void ClearRunHistory()
         {
@@ -367,7 +378,7 @@ namespace ClassicSetup
             RebootSystem();
         }
 
-        private void RebootSystem()
+        private void RebootSystem( )
         {
             try
             {
